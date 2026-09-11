@@ -2,7 +2,7 @@
 
 This is deliberately synchronous and minimal for Phase 1 (no background
 worker/queue) — a document is fully ingested within the request that
-uploads it. Untrusted input handling (CLAUDE.md rule 6): the uploaded
+uploads it. Untrusted input handling (engineering guideline 6): the uploaded
 bytes are treated as opaque data throughout — decoded as text for
 chunking, never executed, never interpolated into a path (the on-disk
 filename is the content hash, not the client-supplied name).

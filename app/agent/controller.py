@@ -11,7 +11,7 @@ sometimes ignores explicit formatting instructions). The "planning"
 decisions this controller makes are simple and few — should the graph
 also be queried? should a newly-discovered component be searched next?
 — so a small set of deterministic rules is more reliable than delegating
-them to a small local LLM, and is fully inspectable/testable (CLAUDE.md
+them to a small local LLM, and is fully inspectable/testable (docs/ENGINEERING_GUIDELINES.md
 rule 3: a rule either fires or it doesn't, no hallucinated plan). An LLM
 (if configured) is only used elsewhere, for final free-text answer
 synthesis (app/generation/) — never for step-by-step planning here.

@@ -6,7 +6,7 @@ deliberately — same shape, same reasoning (docs/DECISIONS.md ADR-005):
   caption. A diagram is still fully searchable via OCR text
   (app/multimodal/ocr.py) with this provider — only the vision *caption*
   chunk and vision-derived relationship extraction are skipped. Honest
-  about not having actually looked at the image (CLAUDE.md rule 3),
+  about not having actually looked at the image (engineering guideline 3),
   rather than fabricating a description.
 - `OllamaVisionProvider` (`VISION_PROVIDER=ollama`): calls a
   locally-running Ollama server with a vision-capable model (default
@@ -38,7 +38,7 @@ class VisionResult:
 
 class VisionProviderError(RuntimeError):
     """Raised when a real vision backend fails or is unreachable — never
-    silently swallowed into a fabricated caption (CLAUDE.md rule 3)."""
+    silently swallowed into a fabricated caption (engineering guideline 3)."""
 
 
 class VisionProvider(ABC):

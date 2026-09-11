@@ -2,7 +2,7 @@
 (app/agent/controller.py).
 
 Every tool here only SELECTs — no tool in this registry writes to
-Postgres or Neo4j (CLAUDE.md rule 6/ARCHITECTURE.md §6: agent tools are
+Postgres or Neo4j (engineering guideline 6/ARCHITECTURE.md §6: agent tools are
 read-only). The final review verdict is persisted exactly once, after
 the agent loop ends, by app/policy/service.py — outside the tool-calling
 loop itself, so a bug in step control can never accidentally cause

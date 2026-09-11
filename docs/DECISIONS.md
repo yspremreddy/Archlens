@@ -29,7 +29,7 @@ open-reuse license for verbatim excerpts, and Terraform's MPL-2.0
 license covers HashiCorp's *code*, not its documentation *prose* (which
 is conventionally all-rights-reserved, publicly viewable but not
 licensed for reuse). Reusing either without a clear license would
-conflict with CLAUDE.md rule 3's spirit (don't present something as
+conflict with engineering guideline 3's spirit (don't present something as
 clearly usable when it isn't) even though the task didn't name licensing
 explicitly as a rule. Every file under `data/samples/public/` carries
 its own URL/license/retrieval-date header, plus a consolidated
@@ -43,7 +43,7 @@ per the task's "do not use large unnecessary datasets."
 - `golden.py`: every expected value (which document a query should
   retrieve, what verdict a review question should produce) was verified
   by actually running the system before being written down as "ground
-  truth" — never assumed or guessed (CLAUDE.md rule 3/4).
+  truth" — never assumed or guessed (engineering guideline 3/4).
 - `baseline.py`: "baseline RAG" = lexical-only retrieval
   (`app.retrieval.core.retrieve(mode="lexical")`); "ArchLens" = the
   actual production path (hybrid retrieval + cross-encoder reranking,
@@ -198,7 +198,7 @@ surfaced concrete decisions.
    fraction — a 5-keyword question sharing one common word like "user"
    was clearing a fractional threshold too easily) between the question
    and each evidence text before scanning it for markers, and a short
-   generic-word stopword list (CLAUDE.md rule 4: every change here was
+   generic-word stopword list (engineering guideline 4: every change here was
    caught by actually running it against real data, not assumed correct).
 
 **Known limitation, stated plainly — Status: fixed in ADR-010** (below
@@ -214,7 +214,7 @@ unrelated gaps in one chunk — see `tests/test_policy.py::test_review_integrate
 which deliberately does not assert a specific verdict for this case).
 Fixing this would need sentence-level (not chunk-level) evidence
 granularity, which is a chunking-strategy change out of scope for this
-phase (CLAUDE.md rule 2 — implement only the requested phase).
+phase (engineering guideline 2 — implement only the requested phase).
 
 **Revisit if:** A better local LLM becomes reliable enough for
 structured plan/judge tasks (re-evaluate deterministic control flow vs.
@@ -258,7 +258,7 @@ multimodal retrieval integrated with existing retrieval.
    region, correct labels, real pixel bounding boxes.
 3. **PDF pages render via `pypdfium2`**, not a system Poppler/Ghostscript
    dependency — a pure pip-installable PDFium binding, so `uv sync`
-   remains the only install step (CLAUDE.md rule 8). A generated
+   remains the only install step (engineering guideline 8). A generated
    single-page PDF and its PNG source produce byte-identical OCR results
    in this milestone's tests.
 4. **Vision captioning is optional, off by default** (`VISION_PROVIDER=
@@ -284,7 +284,7 @@ multimodal retrieval integrated with existing retrieval.
    parsed relationship against OCR-confirmed component names specifically
    *because* of this observed unreliability — `"Larger-service"` is not
    a real label in the diagram, and the cross-check filters exactly this
-   kind of hallucination out (CLAUDE.md rule 3: don't pass through
+   kind of hallucination out (engineering guideline 3: don't pass through
    unverified model claims as fact). Component extraction from OCR labels
    remains reliable regardless, since it's text recognition, not
    generation.
@@ -331,7 +331,7 @@ surfaced three places where the sketch needed a concrete decision.
    actual query need.
 3. **`TrustBoundary` and `ComplianceTag` are not populated.** The sample
    documents don't state either concept explicitly. Extraction only
-   encodes facts actually present in source text (CLAUDE.md rule 3 — no
+   encodes facts actually present in source text (engineering guideline 3 — no
    fabricated facts); the label/edge-type constants stay reserved in
    `app/graph/schema.py` for when real extraction for them exists.
 4. **Extraction is rule-based (regex), not LLM-based**, and Postgres
@@ -443,7 +443,7 @@ requiring the user to install anything extra first.
 **Why:** This is the same pattern the project already uses for
 Postgres — an external, independently-installed local service
 (docker-compose) rather than a bundled dependency — applied to the LLM.
-It keeps CLAUDE.md rule 3 (don't fabricate results) intact: every test
+It keeps engineering guideline 3 (don't fabricate results) intact: every test
 and every persisted `Finding` in this session is honestly labeled
 `llm_provider="template-extractive"`, not presented as real-model output
 that wasn't actually run. It also keeps rule 8 (prefer simple) —

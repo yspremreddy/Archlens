@@ -1,7 +1,7 @@
 """Orchestrates extraction -> Postgres `components` upsert -> Neo4j
 node/edge creation, keeping both sides linked by provenance.
 
-Provenance model (CLAUDE.md rule 7, "preserve evidence/provenance"):
+Provenance model (engineering guideline 7, "preserve evidence/provenance"):
 - Every Postgres `components` row already carries `source_document_id`/
   `source_chunk_id` (docs/SCHEMA.md §3) — this is where extraction
   populates them, for the first time (Phase 1 shipped the columns with

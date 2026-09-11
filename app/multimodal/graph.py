@@ -15,7 +15,7 @@ Two distinct signals, combined conservatively:
   relationship is only kept if BOTH endpoint names were independently
   confirmed by OCR — a vision-model hallucination naming a component
   that isn't actually in the diagram is filtered out rather than
-  trusted (CLAUDE.md rule 3: don't fabricate/pass through unverified
+  trusted (engineering guideline 3: don't fabricate/pass through unverified
   claims as fact).
 
 Postgres `components.extraction_method = 'vision_extracted'`

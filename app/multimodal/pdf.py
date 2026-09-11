@@ -1,6 +1,6 @@
 """PDF page rendering via pypdfium2 — a pure pip-installable binding to
 PDFium (no system Poppler/Ghostscript binary required), consistent with
-CLAUDE.md rule 8 (prefer simple, local solutions with no extra install
+engineering guideline 8 (prefer simple, local solutions with no extra install
 steps beyond `uv sync`).
 
 Each page is rendered to a raster image, then treated identically to an

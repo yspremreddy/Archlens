@@ -5,7 +5,7 @@ chunks up to `max_chars`, respecting paragraph boundaries where possible.
 A single paragraph longer than `max_chars` is hard-split. This is the
 simplest strategy that preserves readable chunk boundaries; more
 sophisticated (sentence-aware, token-aware) chunking can replace it later
-if evaluation shows it matters (per CLAUDE.md rule 8 — simple first).
+if evaluation shows it matters (per engineering guideline 8 — simple first).
 
 `token_count` is a whitespace word-count approximation, not a real
 tokenizer count — it's stored as informational metadata only (see

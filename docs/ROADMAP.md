@@ -2,11 +2,11 @@
 
 Phased by capability, not by date. Each phase should be independently
 useful and independently testable — don't start a phase until the
-previous one's evidence/provenance and tests are solid, per CLAUDE.md
+previous one's evidence/provenance and tests are solid, per docs/ENGINEERING_GUIDELINES.md
 ("implement only the requested phase").
 
 ## Phase 0 — Project foundation (current)
-- [x] CLAUDE.md project rules
+- [x] Engineering guidelines
 - [x] docs/ARCHITECTURE.md, docs/DECISIONS.md, docs/ROADMAP.md, TODO.md
 - [ ] Confirm open questions in ARCHITECTURE.md §8 (tenancy model,
       target compliance frameworks, primary artifact source)

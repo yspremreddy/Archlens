@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application configuration, sourced from environment variables / .env.
 
-    No defaults here are real secrets — see CLAUDE.md rule 5. Local-dev
+    No defaults here are real secrets — see engineering guideline 5. Local-dev
     Postgres credentials in .env.example are placeholders for a
     Docker-only local database, not anything deployed.
     """
@@ -79,8 +79,8 @@ class Settings(BaseSettings):
     # Phase 9 — OpenTelemetry tracing. Off by default (zero behavior
     # change, zero new required infra); when enabled, spans export via
     # OTLP to a locally-run, free Arize Phoenix instance (or any other
-    # local OTLP collector) — no paid observability SaaS, per CLAUDE.md
-    # rule 8. See app/tracing.py.
+    # local OTLP collector) — no paid observability SaaS, per engineering
+    # guideline 8. See app/tracing.py.
     otel_enabled: bool = False
     otel_exporter_otlp_endpoint: str = "http://localhost:4317"
     otel_service_name: str = "archlens-api"

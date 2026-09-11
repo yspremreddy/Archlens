@@ -34,7 +34,7 @@ setup_tracing(app)  # no-op unless OTEL_ENABLED=true (see app/tracing.py)
 
 # Phase 9: the frontend (Vite dev server) runs on a different origin than
 # this API during local development. Only localhost dev-server ports are
-# allowed; no wildcard, no production origin hardcoded here (CLAUDE.md
+# allowed; no wildcard, no production origin hardcoded here (docs/ENGINEERING_GUIDELINES.md
 # rule 5 — nothing environment-specific/secret is embedded in source).
 app.add_middleware(
     CORSMiddleware,
@@ -72,7 +72,7 @@ class StatsResponse(BaseModel):
     components: int
     # No evaluation runs are persisted anywhere (the evaluation suite is
     # a pytest run, not a stored table) — None (-> "—" in the UI) rather
-    # than a made-up number, per CLAUDE.md rule 3.
+    # than a made-up number, per engineering guideline 3.
     evaluations: int | None = None
 
 

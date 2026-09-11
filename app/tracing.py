@@ -3,7 +3,7 @@
 Off by default (`OTEL_ENABLED=false`) — importing this module and
 calling `setup_tracing(app)` is a no-op unless explicitly enabled, so it
 cannot change existing behavior or break tests that don't set the env
-var (CLAUDE.md rule 8: justify added complexity, keep it opt-in).
+var (engineering guideline 8: justify added complexity, keep it opt-in).
 
 When enabled, spans export via OTLP/gRPC to a local collector — a free,
 locally-run Arize Phoenix instance works out of the box

@@ -1,7 +1,7 @@
 // Mirrors app/retrieval/schemas.py, app/generation/schemas.py,
 // app/policy/schemas.py, app/graph/schemas.py. Kept hand-in-sync with the
 // backend Pydantic models — there is no paid/codegen tool wired up for
-// this (CLAUDE.md rule 8: no new major frameworks), so a backend schema
+// this (engineering guideline 8: no new major frameworks), so a backend schema
 // change must be mirrored here by hand.
 
 export type RetrievalMode = 'hybrid' | 'lexical' | 'vector'

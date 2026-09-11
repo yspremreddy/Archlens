@@ -7,7 +7,7 @@ this phase's migration; see docs/SCHEMA.md §3). This is a small, fixed set
 of textual patterns tuned against the actual structure of
 data/samples/*.md ("## Components" bullet lists, "## Ownership" sections)
 — honest about being narrow rather than a general NLP/LLM extractor, per
-CLAUDE.md rule 3 (don't fabricate results): every extracted fact is
+engineering guideline 3 (don't fabricate results): every extracted fact is
 traceable to a specific regex match against specific source text, and a
 document whose structure doesn't match simply yields fewer (or zero)
 components/relationships rather than guessed ones.

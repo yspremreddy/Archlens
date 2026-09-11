@@ -4,7 +4,7 @@ accuracy, groundedness, and abstention/false-confidence — against both
 the synthetic dataset and the real public corpus
 (data/samples/public/, see SOURCES.md). Every ground-truth expectation
 in app/evaluation/golden.py was verified empirically before being
-written down (CLAUDE.md rule 3/4). Run with `-s` to see the printed
+written down (engineering guideline 3/4). Run with `-s` to see the printed
 summary of actual measured values — nothing here is a fabricated
 number.
 """

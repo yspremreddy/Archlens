@@ -19,7 +19,7 @@ build, so it can be reviewed before anything is written.
   after creation also have `updated_at timestamptz NOT NULL DEFAULT
   now()`, maintained by the application layer for now — no DB triggers in
   Phase 1, since there's no concurrent-writer scenario yet that needs
-  DB-enforced consistency (keep it simple per CLAUDE.md rule 8; revisit if
+  DB-enforced consistency (keep it simple per engineering guideline 8; revisit if
   multiple writers emerge).
 - **Append-only tables** (`audit_log`) have `created_at` only — no
   `updated_at`, no update/delete path in the application.
@@ -90,7 +90,7 @@ A retrieval-unit slice of a document's text, with its embedding.
 | `page_number`   | integer         | NULL                                               | For paginated sources. Null for plain text/markdown; `1` for a standalone image (Phase 6); the actual page index for a multi-page PDF (both text-PDF-as-prose and image/PDF-page ingestion — Phase 6 — populate this the same way). |
 | `token_count`   | integer         | NULL                                               | Populated by the chunker; informational, used for chunk-size tuning. |
 | `content_hash`  | text            | NOT NULL                                           | sha256 of `text`, exactly as stored. This is the field a `finding`'s evidence citation is ultimately checked against. |
-| `embedding`     | vector(384)     | NULL                                               | pgvector column. **Dimension 384 assumes a local, open-source sentence-embedding model (e.g. `all-MiniLM-L6-v2`-class) per CLAUDE.md rule 8 — this is a placeholder assumption, not a confirmed decision, and needs sign-off before the ingestion pipeline is built (tracked in TODO.md).** Nullable because a chunk can exist (from chunking) before embedding runs — ingestion is chunk-then-embed as two steps, not atomic. |
+| `embedding`     | vector(384)     | NULL                                               | pgvector column. **Dimension 384 assumes a local, open-source sentence-embedding model (e.g. `all-MiniLM-L6-v2`-class) per engineering guideline 8 — this is a placeholder assumption, not a confirmed decision, and needs sign-off before the ingestion pipeline is built (tracked in TODO.md).** Nullable because a chunk can exist (from chunking) before embedding runs — ingestion is chunk-then-embed as two steps, not atomic. |
 | `modality`      | text            | NOT NULL, DEFAULT `'text'`, CHECK (`modality IN ('text','image_ocr','image_caption')`) | **Added Phase 6** (migration `cc8e51c1a598`). Distinguishes a plain text-document chunk from one derived from an uploaded image/PDF page — OCR'd text (`image_ocr`) or a vision-model caption (`image_caption`). All pre-Phase-6 rows default to `'text'` with no backfill needed. Deliberately a column on the *same* table, not a separate one — see docs/DECISIONS.md ADR-008: a chunk is a chunk regardless of modality, embedded and retrieved identically. |
 | `bbox`          | jsonb           | NULL                                               | **Added Phase 6.** Pixel-space bounding box (`{"x0","y0","x1","y1"}`) for an `image_ocr` chunk (the OCR engine's detected text region) or the whole-page box for an `image_caption` chunk. Null for `'text'` chunks, which use `start_offset`/`end_offset` instead — region provenance for images, character-offset provenance for prose, same idea applied to the two different source formats. |
 | `created_at`    | timestamptz     | NOT NULL, DEFAULT `now()`                          | |
@@ -197,7 +197,7 @@ A risk/compliance claim the system has produced, with its evidence.
 
 ### 5a. `finding_evidence` (join table — part of the findings design)
 
-A finding must cite the exact chunks it's grounded in (CLAUDE.md rule 7).
+A finding must cite the exact chunks it's grounded in (engineering guideline 7).
 A finding can cite multiple chunks, and a chunk can support multiple
 findings, so this is a genuine many-to-many relationship — modeled as a
 join table rather than an array/jsonb column on `findings` so each
@@ -209,7 +209,7 @@ cannot delete a chunk out from under an existing citation).
 |-------------------|------------|----------------------------------------------------------|-------|
 | `id`              | uuid        | PK, default `gen_random_uuid()`                          | |
 | `finding_id`      | uuid        | NOT NULL, FK → `findings(id)` ON DELETE CASCADE           | Evidence rows are meaningless without their finding. |
-| `chunk_id`        | uuid        | NOT NULL, FK → `chunks(id)` ON DELETE RESTRICT             | Deleting a chunk that's cited as evidence is blocked — provenance must not be able to silently disappear (CLAUDE.md rule 7). |
+| `chunk_id`        | uuid        | NOT NULL, FK → `chunks(id)` ON DELETE RESTRICT             | Deleting a chunk that's cited as evidence is blocked — provenance must not be able to silently disappear (engineering guideline 7). |
 | `relevance_note`  | text        | NULL                                                       | Optional free text on why this chunk supports the finding. |
 | `created_at`      | timestamptz | NOT NULL, DEFAULT `now()`                                  | |
 
@@ -265,7 +265,7 @@ findings  *───* chunks            (via finding_evidence)
    over `sentence-transformers`+`torch` because it produces the same
    model class fully locally, with no API key and no network calls at
    inference time, but without torch's much larger install footprint —
-   a better fit for CLAUDE.md rule 8 ("prefer simple, open-source/local
+   a better fit for engineering guideline 8 ("prefer simple, open-source/local
    solutions") given Phase 1 has no GPU/training need, only inference.
    Model weights are downloaded once from Hugging Face on first use and
    cached locally (`app/ingestion/embedding.py`); every embedding call

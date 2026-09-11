@@ -1,4 +1,4 @@
-// Hand-rolled service worker (no vite-plugin-pwa — CLAUDE.md rule 8).
+// Hand-rolled service worker (no vite-plugin-pwa — engineering guideline 8).
 // Caches this app's own static build assets (JS/CSS/HTML/fonts) for
 // offline reload; API calls to the ArchLens backend are NEVER cached
 // here since findings/evidence must always reflect live, current data.

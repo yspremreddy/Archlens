@@ -34,7 +34,7 @@ docs/ROADMAP.md for the full phased plan.
 - [x] Evaluation dashboard (`frontend/src/views/EvaluationView.tsx`) —
   displays the backend evaluation suite's last-measured numbers,
   explicitly labeled as a historical snapshot (not live-recomputed on
-  page view — CLAUDE.md rule 3, don't misrepresent a static number as
+  page view — engineering guideline 3, don't misrepresent a static number as
   live).
 - [x] Tests: 9 Vitest + Testing Library tests (component, storage
   round-trips with `fake-indexeddb`, a mocked-fetch form-submission
@@ -346,7 +346,7 @@ docs/ROADMAP.md for the full phased plan.
   retrieved or relevant, with confidence reflecting how far off-topic
   the evidence was
 - [x] **Three real bugs found and fixed via actual testing against real
-  data, not assumed correct** (CLAUDE.md rule 4) — see docs/DECISIONS.md
+  data, not assumed correct** (engineering guideline 4) — see docs/DECISIONS.md
   ADR-009: bare "documented" falsely matched as an affirmation inside
   negation phrases like "no documented X"; "never" falsely matched as a
   negation inside good-practice statements like "never persisted or
@@ -418,5 +418,5 @@ docs/ROADMAP.md for the full phased plan.
   `template` so tests remain deterministic and network-independent.
   Switch to `ollama` locally to use the real model.
 
-(Per CLAUDE.md: implement only the requested phase, explain major
+(Per docs/ENGINEERING_GUIDELINES.md: implement only the requested phase, explain major
 architectural changes before implementation.)

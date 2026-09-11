@@ -2,7 +2,7 @@
 
 docs/SCHEMA.md is the design source of truth; this module and the Alembic
 migration in alembic/versions/ are its implementation. If they ever
-diverge, SCHEMA.md should be updated deliberately (per CLAUDE.md rule 9),
+diverge, SCHEMA.md should be updated deliberately (per engineering guideline 9),
 not silently outpaced by the code.
 """
 

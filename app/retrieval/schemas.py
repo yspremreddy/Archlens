@@ -27,7 +27,7 @@ class SearchRequest(BaseModel):
 
 class Citation(BaseModel):
     """Provenance for a single result — enough for a caller to verify the
-    claim independently, per CLAUDE.md rule 7 (preserve evidence/
+    claim independently, per engineering guideline 7 (preserve evidence/
     provenance). No generation happens in Phase 2; this is what a later
     generation step (Phase 3) would cite.
     """

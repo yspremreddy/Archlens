@@ -2,7 +2,7 @@
 dataset (data/samples/*.md) and the real public corpus
 (data/samples/public/, see SOURCES.md). Every expected value here was
 verified empirically against a running instance before being written
-down (CLAUDE.md rule 3/4 — no fabricated ground truth); see
+down (engineering guideline 3/4 — no fabricated ground truth); see
 docs/DECISIONS.md ADR-011.
 """
 

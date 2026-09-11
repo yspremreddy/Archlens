@@ -7,7 +7,7 @@ synthetic sample documents' "Known gaps" sections were authored using
 exactly this kind of plain-English negation ("no documented...", "is not
 currently...", "without..."), so a general negation/affirmation scan
 over whatever evidence the agent retrieves is both simpler than curating
-per-topic rules (CLAUDE.md rule 8 — prefer simple) and more general (it
+per-topic rules (engineering guideline 8 — prefer simple) and more general (it
 works for any question, not just ones a rule author anticipated).
 """
 
@@ -36,7 +36,7 @@ NEGATION_PATTERNS = [
     # differently than the synthetic corpus's "no documented X" style —
     # "forbidden", "disallowed", "prohibited", "not allowed", "denied"
     # are all generic English negation-of-permission words, not curated
-    # per-topic vocabulary (CLAUDE.md rule 8).
+    # per-topic vocabulary (engineering guideline 8).
     r"\bforbidden\b",
     r"\bdisallow(?:ed|s)?\b",
     r"\bprohibited\b",

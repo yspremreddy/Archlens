@@ -6,7 +6,7 @@ All metrics use binary relevance (a document either is or isn't in the
 golden relevant set for a query) since that's what the golden sets
 (app/evaluation/golden.py) define — a graded-relevance nDCG would need
 graded ground truth this project doesn't have and would be fabricated
-(CLAUDE.md rule 3), so binary-relevance nDCG is used instead.
+(engineering guideline 3), so binary-relevance nDCG is used instead.
 """
 
 import math

@@ -1,7 +1,7 @@
 """Security tests: prompt injection, poisoned documents, unauthorized/
 cross-document retrieval, and unsafe (write-capable) tools.
 
-CLAUDE.md rule 6 ("treat uploaded/retrieved content as untrusted") is
+engineering guideline 6 ("treat uploaded/retrieved content as untrusted") is
 the throughline: ingested content is data, never instructions, and no
 agent tool may mutate state. These tests exercise that with real
 ingested adversarial content, not just inspection of the code.

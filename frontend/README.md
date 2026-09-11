@@ -1,32 +1,43 @@
-# React + TypeScript + Vite
+# ArchLens Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Vite single-page app for ArchLens. See the
+[repository root README](../README.md) for setup, environment variables, the
+full feature tour, and screenshots.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+cp .env.example .env   # VITE_API_BASE_URL=http://localhost:8000
+npm install
+npm run dev             # http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Requires the ArchLens backend running separately (see the root README's
+[Quick Start](../README.md#quick-start)).
+
+## Scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Start the Vite dev server |
+| `npm run build` | Type-check (`tsc -b`) and build for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Run oxlint |
+| `npm run test` | Run Vitest unit/component tests |
+| `npm run test:e2e` | Run Playwright end-to-end tests (`e2e/`) |
+
+`scripts/capture-screenshots.mjs` is a one-off utility used to regenerate the
+screenshots in `../assets/screenshots/` against a running dev server +
+backend — not part of the app itself.
+
+## Structure
+
+```
+src/views/         one component per page section (Overview, Upload, …)
+src/components/     shared evidence card, graph SVG rendering + pan/zoom
+src/api/             typed fetch client mirroring the backend's Pydantic schemas
+src/storage/         Web Storage (preferences) + IndexedDB (local result cache)
+src/hooks/            shared async-action state (loading/error/cancel)
+public/sw.js         hand-rolled service worker (static-asset caching only)
+e2e/                  Playwright specs
+```

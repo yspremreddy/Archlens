@@ -10,7 +10,7 @@ vector search (app/retrieval/) and eligible as `/answer` evidence with
 ADR-008 for why this integration path was chosen over a parallel
 image-embedding system.
 
-Untrusted input handling (CLAUDE.md rule 6): uploaded image/PDF bytes
+Untrusted input handling (engineering guideline 6): uploaded image/PDF bytes
 are only ever passed to OCR/rendering/vision libraries as opaque pixel
 data — never executed, never interpolated into a path (storage filename
 is the content hash, matching app/ingestion/service.py).

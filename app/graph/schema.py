@@ -18,7 +18,7 @@ sample data. Documented deviations (see docs/DECISIONS.md ADR-007):
 - `TrustBoundary` and `ComplianceTag` are not populated by this
   milestone's extractor — the sample data doesn't state either concept
   explicitly, and inventing values would fabricate facts not actually in
-  the source documents (CLAUDE.md rule 3). The label/edge-type constants
+  the source documents (engineering guideline 3). The label/edge-type constants
   are reserved below for when real extraction for them exists.
 
 Every node and relationship this milestone creates carries provenance

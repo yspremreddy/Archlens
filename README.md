@@ -97,10 +97,12 @@ flowchart TD
     GEN --> ANS[Grounded, cited answer]
 ```
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design and
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design,
 [docs/DECISIONS.md](docs/DECISIONS.md) for the ADR log covering every
 non-trivial choice (why hybrid retrieval, why rule-based policy instead of
-LLM-judged, why sentence-granular evidence scanning, etc.).
+LLM-judged, why sentence-granular evidence scanning, etc.), and
+[docs/ENGINEERING_GUIDELINES.md](docs/ENGINEERING_GUIDELINES.md) for the
+engineering principles the project follows.
 
 ### Stack
 

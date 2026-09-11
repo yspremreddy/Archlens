@@ -222,7 +222,7 @@ Threaded throughout, not a bolt-on module:
   way that lets it issue instructions (prompt-injection resistance).
 - Authn/authz on every endpoint; row-level scoping in Postgres so one
   org's architecture corpus is never visible to another.
-- Secrets via environment/secrets manager only (see CLAUDE.md), never
+- Secrets via environment/secrets manager only (see docs/ENGINEERING_GUIDELINES.md), never
   committed.
 - Audit log of who queried what and which findings were shown to whom.
 
@@ -285,7 +285,7 @@ in practice, and why, is recorded in docs/DECISIONS.md ADR-007:
 - Reserved, not yet populated: `TrustBoundary`, `ComplianceTag`,
   `TAGGED_WITH`, `CROSSES_BOUNDARY` — the sample data doesn't state
   either concept explicitly, and extraction only ever encodes facts
-  actually present in source text (CLAUDE.md rule 3).
+  actually present in source text (engineering guideline 3).
 - Every node/relationship carries `pg_document_id`/`pg_chunk_id`
   (components also `pg_component_id`) linking back to Postgres.
 

@@ -3,6 +3,10 @@
 Thanks for considering a contribution. ArchLens is a local-first, no-paid-API
 project — contributions that keep it that way are especially welcome.
 
+See [docs/ENGINEERING_GUIDELINES.md](docs/ENGINEERING_GUIDELINES.md) for the
+full set of engineering principles this project follows; the ground rules
+below are the ones most relevant to external contributions.
+
 ## Ground rules
 
 - **Everything must run locally and for free.** No new required paid APIs or

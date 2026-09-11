@@ -1,5 +1,5 @@
 // Local caching of past search/answer/review results via raw IndexedDB
-// (no wrapper library — CLAUDE.md rule 8, keep it simple/dependency-free).
+// (no wrapper library — engineering guideline 8, keep it simple/dependency-free).
 // Purely a client-side convenience: lets a user revisit recent results
 // offline or instantly, without re-querying the backend. Never treated
 // as a source of truth — every cached row keeps the same citations the

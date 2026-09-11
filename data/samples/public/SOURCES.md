@@ -5,7 +5,7 @@ the existing fully-synthetic dataset (`data/samples/*.md`,
 `data/samples/diagrams/`). Every file below is a genuine excerpt from a
 publicly published, clearly-licensed source — fetched on the date
 recorded, with the exact source URL and license kept alongside the
-content (CLAUDE.md rule 3: no fabricated content; rule 5/8 equivalent
+content (engineering guideline 3: no fabricated content; rule 5/8 equivalent
 for provenance — never present derived/paraphrased text as if it were
 the primary source without saying so).
 
@@ -23,7 +23,7 @@ Each file below also carries its own attribution header (source, URL,
 license, retrieval date) so provenance survives even if this ledger and
 the file are separated. Content is a mix of direct quotation (marked)
 and close paraphrase of the fetched page content — not a full mirror of
-either site, kept short deliberately (CLAUDE.md rule 8 / task instruction
+either site, kept short deliberately (engineering guideline 8 / task instruction
 "do not use large unnecessary datasets").
 
 **Why these four, out of the suggested list (AWS, NIST, Kubernetes,

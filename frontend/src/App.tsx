@@ -10,7 +10,7 @@ import { getTheme, setTheme, type ThemePreference } from './storage/preferences'
 // Single scrollable page (Phase 9 redesign): every section renders at
 // once, in document order, and the nav scrolls to a section instead of
 // switching which one is mounted. No React Router — still just anchor
-// links + scrollIntoView (CLAUDE.md rule 8, no new major dependency).
+// links + scrollIntoView (engineering guideline 8, no new major dependency).
 const SECTIONS = [
   { id: 'overview', label: 'Overview', component: Dashboard },
   { id: 'upload', label: 'Upload', component: UploadView },

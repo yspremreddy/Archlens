@@ -8,7 +8,7 @@ Two local/free providers, no paid API, no API key ever required:
   so the retrieve->generate pipeline works out of the box and tests never
   depend on network access or a multi-GB model. It is explicitly NOT a
   language model; `LLMResult.provider` is always labeled
-  "template-extractive" so callers (and CLAUDE.md rule 3 — don't
+  "template-extractive" so callers (and engineering guideline 3 — don't
   fabricate results) can tell the difference from real generation.
 - `OllamaProvider`: calls a locally-running Ollama server
   (https://ollama.com — free, open-source, runs entirely on the caller's
@@ -52,7 +52,7 @@ class LLMProvider(ABC):
 
 class LLMProviderError(RuntimeError):
     """Raised when a real LLM backend fails or is unreachable — never
-    silently swallowed into a fabricated answer (CLAUDE.md rule 3)."""
+    silently swallowed into a fabricated answer (engineering guideline 3)."""
 
 
 class TemplateExtractiveProvider(LLMProvider):

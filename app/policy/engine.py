@@ -9,7 +9,7 @@ with docs/DECISIONS.md ADR-005/ADR-008's finding that the local models
 practical on this machine are not reliable for structured judgment
 tasks; a marker-based scan is fully deterministic, inspectable, and
 testable, and never invents a verdict beyond what the evidence text
-literally contains (CLAUDE.md rule 3).
+literally contains (engineering guideline 3).
 
 Verdict semantics:
 - **UNKNOWN**: no evidence was retrieved, or the evidence has
@@ -50,7 +50,7 @@ _WORD_RE = re.compile(r"[a-zA-Z0-9]{4,}")
 # registration, login..."), clearing the overlap-count threshold and
 # producing a false PASS for a topic the corpus never actually
 # discusses. This is a short list of genuinely generic words, not
-# curated per-topic vocabulary (CLAUDE.md rule 8 — still simple/general).
+# curated per-topic vocabulary (engineering guideline 8 — still simple/general).
 _STOPWORDS = frozenset(
     {
         "does", "have", "with", "this", "that", "from", "into", "system",

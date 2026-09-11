@@ -1,7 +1,7 @@
 import type { GraphPathOut } from '../api/types'
 
 // Hand-rolled inline-SVG rendering of graph paths returned by /review or
-// /graph/query — no charting/graph-viz library (CLAUDE.md rule 8). Each
+// /graph/query — no charting/graph-viz library (engineering guideline 8). Each
 // path is drawn as a horizontal chain of component nodes connected by
 // labeled, directional edges. Nodes are clickable (node selection) —
 // panning/zooming is handled by the wrapping <GraphCanvas> in

@@ -3,7 +3,7 @@
 // corpus). These are the actual printed values from that test run, not
 // live-computed here — the dashboard doesn't re-run the backend
 // evaluation suite on every page view, so the numbers are labeled as a
-// historical snapshot, per CLAUDE.md rule 3 (don't fabricate results:
+// historical snapshot, per engineering guideline 3 (don't fabricate results:
 // showing a number as "live" when it isn't would misrepresent it).
 const MEASURED_AT = 'last verified backend test run (see README.md "Evaluation" section for the full pytest output)'
 

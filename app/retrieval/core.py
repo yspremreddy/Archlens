@@ -29,7 +29,7 @@ class RetrievedResult:
 
 def citation_for(chunk: Chunk) -> Citation:
     """Shared by /search and /answer — every retrieval result, in either
-    API, carries this same provenance shape (CLAUDE.md rule 7)."""
+    API, carries this same provenance shape (engineering guideline 7)."""
     return Citation(
         document_id=chunk.document_id,
         document_filename=chunk.document.original_filename,

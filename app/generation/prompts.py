@@ -1,5 +1,5 @@
 """Prompt construction with a hard split between system instructions and
-retrieved (untrusted) content — CLAUDE.md rule 6 and rule 9.
+retrieved (untrusted) content — engineering guideline 6 and rule 9.
 
 `SYSTEM_PROMPT` is a fixed constant string. It is NEVER built with
 string interpolation of anything retrieved or user-supplied — nothing

@@ -23,7 +23,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Database URL comes from app settings (env vars / .env), never hardcoded
-# in alembic.ini (CLAUDE.md rule 5: don't hardcode secrets).
+# in alembic.ini (engineering guideline 5: don't hardcode secrets).
 config.set_main_option("sqlalchemy.url", get_settings().sqlalchemy_database_url)
 
 target_metadata = Base.metadata
