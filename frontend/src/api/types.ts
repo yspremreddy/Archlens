@@ -29,6 +29,7 @@ export interface Citation {
   modality: string
   page_number: number | null
   bbox: Record<string, number> | null
+  text: string
 }
 
 export interface SearchResultItem {
@@ -113,4 +114,12 @@ export interface GraphExtractResponse {
   components_upserted: number
   relationships_upserted: number
   owner_linked: boolean
+}
+
+export interface StatsResponse {
+  documents: number
+  chunks: number
+  reviews: number
+  components: number
+  evaluations: number | null
 }

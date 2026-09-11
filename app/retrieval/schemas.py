@@ -45,6 +45,13 @@ class Citation(BaseModel):
     modality: str = "text"
     page_number: int | None = None
     bbox: dict | None = None
+    # Phase 9 (frontend): the actual chunk text, so a citation is
+    # self-contained evidence a caller can read directly — not just a
+    # hash to look up separately. Populated from the same Chunk row every
+    # other field here already comes from (app/retrieval/core.py's
+    # citation_for, app/graph/retrieval.py's _citation_from_pg_ids); no
+    # retrieval/ranking/policy logic changes.
+    text: str = ""
 
 
 class SearchResultItem(BaseModel):

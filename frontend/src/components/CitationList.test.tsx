@@ -15,6 +15,7 @@ const citation: Citation = {
   modality: 'text',
   page_number: null,
   bbox: null,
+  text: 'payment-api currently has no documented rate limiting on the checkout endpoint.',
 }
 
 describe('CitationList', () => {
@@ -27,5 +28,11 @@ describe('CitationList', () => {
     render(<CitationList citations={[citation]} />)
     expect(screen.getByText('payment-service.md')).toBeInTheDocument()
     expect(screen.getByText(/chunk #0/)).toBeInTheDocument()
+  })
+
+  it('shows the actual evidence text, not just hashes', () => {
+    render(<CitationList citations={[citation]} verdict="FAIL" />)
+    expect(screen.getByText(/no documented rate limiting/)).toBeInTheDocument()
+    expect(screen.getByText(/identifying this gap/)).toBeInTheDocument()
   })
 })

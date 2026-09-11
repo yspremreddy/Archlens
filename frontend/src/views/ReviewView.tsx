@@ -25,11 +25,11 @@ export function ReviewView() {
   }
 
   return (
-    <section aria-labelledby="review-heading">
-      <h2 id="review-heading">Architecture review</h2>
-      <p className="status-text">
-        Ask a compliance/risk question. ArchLens searches evidence, optionally traverses the
-        component graph, and returns a verdict with citations.
+    <section id="review" aria-labelledby="review-heading" className="page-section">
+      <h2 id="review-heading">Architecture Review</h2>
+      <p className="section-description">
+        Ask a compliance or architecture question. ArchLens searches your evidence and returns a
+        finding with supporting sources.
       </p>
 
       <form onSubmit={handleSubmit} className="card">
@@ -48,7 +48,12 @@ export function ReviewView() {
           {action.loading ? 'Reviewing…' : 'Run review'}
         </button>
         {action.loading && (
-          <button type="button" className="btn btn-secondary" style={{ marginInlineStart: '0.5rem' }} onClick={action.cancel}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ marginInlineStart: '0.5rem' }}
+            onClick={action.cancel}
+          >
             Cancel
           </button>
         )}
@@ -59,18 +64,29 @@ export function ReviewView() {
         {action.data && (
           <div className="card">
             <h3>
-              Verdict: <span className={`verdict-badge verdict-${action.data.verdict}`}>{action.data.verdict}</span>
+              Verdict:{' '}
+              <span className={`verdict-badge verdict-${action.data.verdict}`}>
+                {action.data.verdict}
+              </span>
               <span className="severity-badge">severity: {action.data.severity}</span>
             </h3>
-            <p>Confidence: {(action.data.confidence * 100).toFixed(0)}%</p>
+            <dl className="meta-list">
+              <div>
+                <dt>Confidence</dt>
+                <dd>{(action.data.confidence * 100).toFixed(0)}%</dd>
+              </div>
+              <div>
+                <dt>Agent steps</dt>
+                <dd>
+                  {action.data.agent_steps}
+                  {action.data.hit_step_bound ? ' (hit step bound)' : ''}
+                </dd>
+              </div>
+            </dl>
             <p>{action.data.recommendation}</p>
-            <p className="status-text">
-              Agent steps: {action.data.agent_steps}
-              {action.data.hit_step_bound ? ' (hit step bound)' : ''}
-            </p>
 
-            <h4>Evidence</h4>
-            <CitationList citations={action.data.citations} />
+            <h4>Supporting evidence</h4>
+            <CitationList citations={action.data.citations} verdict={action.data.verdict} />
 
             {action.data.graph_paths.length > 0 && (
               <>

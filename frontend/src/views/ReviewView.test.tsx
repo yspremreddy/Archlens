@@ -23,6 +23,7 @@ const mockReviewResponse: ReviewResponse = {
       modality: 'text',
       page_number: null,
       bbox: null,
+      text: 'payment-api currently has no documented rate limiting on the checkout endpoint.',
     },
   ],
   graph_paths: [],

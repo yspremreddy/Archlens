@@ -9,6 +9,7 @@ import type {
   SearchResponse,
   RetrievalMode,
   GraphDirection,
+  StatsResponse,
 } from './types'
 
 // Resolved at build time (Vite `import.meta.env`); defaults to the
@@ -54,6 +55,10 @@ async function request<T>(
 
 export function getHealth(signal?: AbortSignal): Promise<HealthResponse> {
   return request('/health', { signal })
+}
+
+export function getStats(signal?: AbortSignal): Promise<StatsResponse> {
+  return request('/stats', { signal })
 }
 
 export function uploadDocument(file: File, signal?: AbortSignal): Promise<DocumentUploadResponse> {

@@ -64,6 +64,7 @@ def _citation_from_pg_ids(
         chunk_content_hash=chunk.content_hash,
         start_offset=chunk.start_offset,
         end_offset=chunk.end_offset,
+        text=chunk.text,
     )
 
 

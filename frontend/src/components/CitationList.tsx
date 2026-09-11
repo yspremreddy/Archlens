@@ -1,28 +1,22 @@
-import type { Citation } from '../api/types'
+import type { Citation, Verdict } from '../api/types'
+import { EvidenceCard } from './EvidenceCard'
 
-export function CitationList({ citations }: { citations: Citation[] }) {
+const VERDICT_SUPPORT_NOTES: Record<Verdict, string> = {
+  PASS: 'Supports this control being met.',
+  FAIL: 'Evidence ArchLens considered when identifying this gap.',
+  CONFLICT: 'One of the conflicting statements found in your evidence.',
+  UNKNOWN: 'Evidence considered, but it did not clearly confirm or deny this control.',
+}
+
+export function CitationList({ citations, verdict }: { citations: Citation[]; verdict?: Verdict }) {
   if (citations.length === 0) {
     return <p className="status-text">No citations.</p>
   }
+  const supportNote = verdict ? VERDICT_SUPPORT_NOTES[verdict] : undefined
   return (
-    <ul className="citation-list" aria-label="Evidence citations">
+    <ul className="evidence-list" aria-label="Evidence citations">
       {citations.map((c, i) => (
-        <li className="citation-item" key={`${c.chunk_id}-${i}`}>
-          <div>
-            <strong>{c.document_filename}</strong>{' '}
-            <span className="status-text">
-              (chunk #{c.chunk_index}
-              {c.modality !== 'text' ? `, ${c.modality}` : ''}
-              {c.page_number != null ? `, page ${c.page_number}` : ''})
-            </span>
-          </div>
-          <div>
-            <code>doc hash: {c.document_content_hash.slice(0, 16)}…</code>
-          </div>
-          <div>
-            <code>chunk hash: {c.chunk_content_hash.slice(0, 16)}…</code>
-          </div>
-        </li>
+        <EvidenceCard citation={c} supportNote={supportNote} key={`${c.chunk_id}-${i}`} />
       ))}
     </ul>
   )

@@ -56,10 +56,14 @@ hand-rolled Service Worker (static-asset caching only — API responses are
 never cached, so findings are always live) · Vitest + Testing Library ·
 Playwright.
 
+The whole app is a single scrollable page (Overview → Upload → Review →
+Evidence → Graph → Evaluation, in that order) with a sticky nav that
+smooth-scrolls to each section — not separate routes/tabs.
+
 No new major frameworks were introduced beyond what was explicitly
-requested: no React Router (tab-based view switching instead), no charting
-library (the graph view is hand-rolled inline SVG), no IndexedDB wrapper, no
-service-worker build plugin.
+requested: no React Router (anchor-link scrolling instead), no charting
+library (the graph view is hand-rolled inline SVG with a small pan/zoom
+wrapper), no IndexedDB wrapper, no service-worker build plugin.
 
 ## Setup
 
@@ -114,18 +118,22 @@ docker run -p 6006:6006 -p 4317:4317 arizephoenix/phoenix
 ## Demo flow
 
 1. Start the backend and frontend as above.
-2. Open `http://localhost:5173` → **Upload** tab → upload
-   `data/samples/payment-service.md`.
-3. Click **Extract graph relationships** on the upload result.
-4. Go to **Review** → ask *"does payment-api have rate limiting on the
-   checkout endpoint?"* → verdict, severity, confidence, recommendation, and
-   citations render, each traceable to a real chunk hash.
-5. Go to **Search** → try hybrid vs. lexical vs. vector modes on the same
-   query, or click **Ask** for a generated, grounded answer.
-6. Go to **Graph** → query `event-collector` downstream to see extracted
-   component relationships as an SVG diagram.
-7. Go to **Evaluation** → the last-measured retrieval/finding/latency numbers
-   from the backend's own evaluation suite (see below — not recomputed live
+2. Open `http://localhost:5173` — everything below lives on this one page;
+   the nav links scroll you to each section.
+3. **Upload** section → upload `data/samples/payment-service.md` → a file
+   preview (readable text) and an "indexed successfully" confirmation
+   appear. Click **Extract graph relationships** on the result.
+4. **Architecture Review** section → ask *"does payment-api have rate
+   limiting on the checkout endpoint?"* → verdict, severity, confidence,
+   agent steps, and evidence cards render, each showing the actual matching
+   text plus its document/chunk hash.
+5. **Evidence Search** section → try hybrid vs. lexical vs. vector modes on
+   the same query, or click **Ask** for a generated, grounded answer.
+6. **Component Graph** section → query `event-collector` downstream to see
+   extracted component relationships as a pannable/zoomable SVG diagram;
+   click a node to select/highlight it.
+7. **Evaluation** section → the last-measured retrieval/finding/latency
+   numbers from the backend's own evaluation suite (see below — not recomputed live
    by the dashboard).
 
 ## Security

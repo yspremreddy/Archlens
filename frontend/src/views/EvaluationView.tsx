@@ -57,18 +57,33 @@ function MetricTable({ title, rows }: { title: string; rows: { label: string; va
   )
 }
 
+const HAS_RESULTS =
+  RETRIEVAL_METRICS.length > 0 ||
+  BASELINE_COMPARISON.length > 0 ||
+  REVIEW_METRICS.length > 0 ||
+  LATENCY_METRICS.length > 0
+
 export function EvaluationView() {
   return (
-    <section aria-labelledby="eval-heading">
-      <h2 id="eval-heading">Evaluation results</h2>
+    <section id="evaluation" aria-labelledby="eval-heading" className="page-section">
+      <h2 id="eval-heading">Evaluation</h2>
+      <p className="section-description">
+        Measure how well ArchLens retrieves evidence and produces accurate architecture review
+        results.
+      </p>
       <p className="status-text">
         Snapshot from the {MEASURED_AT}. Re-run <code>pytest tests/test_evaluation.py -s</code> against a running
         backend to reproduce these numbers on your own machine.
       </p>
-      <MetricTable title="Retrieval (golden cases: synthetic + public corpus)" rows={RETRIEVAL_METRICS} />
-      <MetricTable title="Baseline vs ArchLens" rows={BASELINE_COMPARISON} />
-      <MetricTable title="Review / findings" rows={REVIEW_METRICS} />
-      <MetricTable title="Latency (local, template provider, no external LLM)" rows={LATENCY_METRICS} />
+      {!HAS_RESULTS && <p className="status-text">No evaluation results available yet.</p>}
+      {HAS_RESULTS && (
+        <>
+          <MetricTable title="Retrieval (golden cases: synthetic + public corpus)" rows={RETRIEVAL_METRICS} />
+          <MetricTable title="Baseline vs ArchLens" rows={BASELINE_COMPARISON} />
+          <MetricTable title="Review / findings" rows={REVIEW_METRICS} />
+          <MetricTable title="Latency (local, template provider, no external LLM)" rows={LATENCY_METRICS} />
+        </>
+      )}
     </section>
   )
 }

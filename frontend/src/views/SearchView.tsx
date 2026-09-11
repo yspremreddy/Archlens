@@ -3,6 +3,7 @@ import { answer as answerApi, search as searchApi } from '../api/client'
 import type { RetrievalMode } from '../api/types'
 import { useAsyncAction } from '../hooks/useAsyncAction'
 import { CitationList } from '../components/CitationList'
+import { EvidenceCard } from '../components/EvidenceCard'
 import { getPreferredRetrievalMode, setPreferredRetrievalMode } from '../storage/preferences'
 import { cacheResult } from '../storage/cache'
 
@@ -31,12 +32,16 @@ export function SearchView() {
   }
 
   return (
-    <section aria-labelledby="search-heading">
-      <h2 id="search-heading">Search &amp; ask</h2>
+    <section id="evidence" aria-labelledby="evidence-heading" className="page-section">
+      <h2 id="evidence-heading">Evidence Search</h2>
+      <p className="section-description">
+        Search your architecture documents to find evidence related to a component, requirement,
+        or question.
+      </p>
 
       <form onSubmit={handleSearch} className="card">
         <div className="field">
-          <label htmlFor="search-query">Query</label>
+          <label htmlFor="search-query">Search query</label>
           <input
             id="search-query"
             type="search"
@@ -49,15 +54,21 @@ export function SearchView() {
         <div className="field">
           <label htmlFor="mode-select">Retrieval mode</label>
           <select id="mode-select" value={mode} onChange={(e) => handleModeChange(e.target.value as RetrievalMode)}>
-            <option value="hybrid">hybrid</option>
-            <option value="lexical">lexical</option>
-            <option value="vector">vector</option>
+            <option value="hybrid">hybrid (lexical + vector)</option>
+            <option value="lexical">lexical only</option>
+            <option value="vector">vector only</option>
           </select>
         </div>
         <button type="submit" className="btn" disabled={search.loading}>
           {search.loading ? 'Searching…' : 'Search'}
         </button>
-        <button type="button" className="btn btn-secondary" style={{ marginInlineStart: '0.5rem' }} onClick={handleAsk} disabled={answer.loading}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          style={{ marginInlineStart: '0.5rem' }}
+          onClick={handleAsk}
+          disabled={answer.loading}
+        >
           {answer.loading ? 'Asking…' : 'Ask (generate answer)'}
         </button>
       </form>
@@ -68,7 +79,7 @@ export function SearchView() {
 
         {answer.data && (
           <div className="card">
-            <h3>Answer</h3>
+            <h3>Generated answer</h3>
             <p>{answer.data.answer}</p>
             <p className="status-text">
               provider: {answer.data.llm_provider}/{answer.data.llm_model} · grounded:{' '}
@@ -85,17 +96,15 @@ export function SearchView() {
             <h3>
               Results ({search.data.result_count}) — mode: {search.data.mode}
             </h3>
-            <ul className="result-list">
-              {search.data.results.map((r, i) => (
-                <li key={`${r.citation.chunk_id}-${i}`} className="citation-item">
-                  <p>{r.text}</p>
-                  <p className="status-text">
-                    score: {r.score.toFixed(3)} · methods: {r.retrieval_methods.join(', ')} · from{' '}
-                    {r.citation.document_filename}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            {search.data.result_count === 0 ? (
+              <p className="status-text">No matching evidence found for this query.</p>
+            ) : (
+              <ul className="evidence-list">
+                {search.data.results.map((r, i) => (
+                  <EvidenceCard citation={r.citation} score={r.score} key={`${r.citation.chunk_id}-${i}`} />
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>

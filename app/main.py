@@ -2,7 +2,8 @@ import uuid
 
 from fastapi import Depends, FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import text
+from pydantic import BaseModel
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -19,7 +20,7 @@ from app.graph.schemas import (
 )
 from app.graph.service import extract_graph_for_document
 from app.ingestion.service import ingest_document
-from app.models import Document
+from app.models import Chunk, Component, Document, Finding
 from app.multimodal.graph import extract_graph_for_visual_document
 from app.multimodal.service import IMAGE_MIME_TYPES, PDF_MIME_TYPES, ingest_visual_document
 from app.policy.schemas import ReviewRequest, ReviewResponse
@@ -62,6 +63,34 @@ def health(db: Session = Depends(get_db)) -> dict:
     except Exception:
         db_ok = False
     return {"status": "ok" if db_ok else "degraded", "database": db_ok}
+
+
+class StatsResponse(BaseModel):
+    documents: int
+    chunks: int
+    reviews: int
+    components: int
+    # No evaluation runs are persisted anywhere (the evaluation suite is
+    # a pytest run, not a stored table) — None (-> "—" in the UI) rather
+    # than a made-up number, per CLAUDE.md rule 3.
+    evaluations: int | None = None
+
+
+@app.get("/stats", response_model=StatsResponse)
+def stats(db: Session = Depends(get_db)) -> StatsResponse:
+    """Real, current row counts — no logic beyond COUNT(*) over existing
+    tables, added for the Overview page (Phase 9). Reviews = findings
+    with a verdict (i.e. created via /review, not /answer's free-text
+    findings, which leave verdict null)."""
+    return StatsResponse(
+        documents=db.execute(select(func.count()).select_from(Document)).scalar_one(),
+        chunks=db.execute(select(func.count()).select_from(Chunk)).scalar_one(),
+        reviews=db.execute(
+            select(func.count()).select_from(Finding).where(Finding.verdict.is_not(None))
+        ).scalar_one(),
+        components=db.execute(select(func.count()).select_from(Component)).scalar_one(),
+        evaluations=None,
+    )
 
 
 @app.post("/documents")

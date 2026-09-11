@@ -3,8 +3,19 @@ import type { GraphPathOut } from '../api/types'
 // Hand-rolled inline-SVG rendering of graph paths returned by /review or
 // /graph/query — no charting/graph-viz library (CLAUDE.md rule 8). Each
 // path is drawn as a horizontal chain of component nodes connected by
-// labeled, directional edges.
-export function GraphPathView({ paths }: { paths: GraphPathOut[] }) {
+// labeled, directional edges. Nodes are clickable (node selection) —
+// panning/zooming is handled by the wrapping <GraphCanvas> in
+// views/GraphView.tsx, not here, so this component still renders the
+// exact same data/shapes it always did.
+export function GraphPathView({
+  paths,
+  selectedNode,
+  onSelectNode,
+}: {
+  paths: GraphPathOut[]
+  selectedNode?: string | null
+  onSelectNode?: (name: string) => void
+}) {
   if (paths.length === 0) {
     return <p className="status-text">No graph paths returned.</p>
   }
@@ -48,10 +59,39 @@ export function GraphPathView({ paths }: { paths: GraphPathOut[] }) {
               {path.components.map((name, ni) => {
                 const x = ni * (nodeWidth + nodeGap)
                 const y = height / 2 - 18
+                const isSelected = selectedNode === name
                 return (
-                  <g key={ni}>
-                    <rect x={x} y={y} width={nodeWidth} height={36} rx={6} fill="var(--surface)" stroke="currentColor" />
-                    <text x={x + nodeWidth / 2} y={y + 22} textAnchor="middle" fontSize="12">
+                  <g
+                    key={ni}
+                    onClick={() => onSelectNode?.(name)}
+                    style={{ cursor: onSelectNode ? 'pointer' : 'default' }}
+                    tabIndex={onSelectNode ? 0 : undefined}
+                    role={onSelectNode ? 'button' : undefined}
+                    aria-pressed={onSelectNode ? isSelected : undefined}
+                    onKeyDown={(e) => {
+                      if (onSelectNode && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault()
+                        onSelectNode(name)
+                      }
+                    }}
+                  >
+                    <rect
+                      x={x}
+                      y={y}
+                      width={nodeWidth}
+                      height={36}
+                      rx={6}
+                      fill={isSelected ? 'var(--accent)' : 'var(--surface)'}
+                      stroke="currentColor"
+                      strokeWidth={isSelected ? 2 : 1}
+                    />
+                    <text
+                      x={x + nodeWidth / 2}
+                      y={y + 22}
+                      textAnchor="middle"
+                      fontSize="12"
+                      fill={isSelected ? 'var(--accent-contrast)' : 'currentColor'}
+                    >
                       {name}
                     </text>
                   </g>
