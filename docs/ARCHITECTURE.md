@@ -92,18 +92,25 @@ store as their metadata means a chunk and its embedding can never drift
 out of sync. Revisit only if corpus size or query volume outgrows it.
 
 ### Neo4j (graph store, for GraphRAG)
-Models the architecture itself as a graph: services, data stores, data
-flows, trust boundaries, ownership, and compliance tags as nodes and
-edges. This is what makes relationship questions answerable — "what
-downstream services touch this PII field," "what's the blast radius of
-this component" — which are structurally graph traversals, not similarity
-search. This is the component most worth scrutinizing before building: it
-requires (a) an extraction step that reliably turns architecture docs into
-a graph, which is its own hard problem, and (b) keeping two stores (Neo4j
-+ Postgres) consistent. **Recommendation: postpone.** Build structured
-retrieval over Postgres first; only add Neo4j once there's a concrete set
-of relationship questions that structured SQL joins genuinely can't answer
-well. See §7.
+**First milestone implemented, Phase 5** (`app/graph/`). Runs locally via
+Docker (Community Edition — free, no license, same pattern as
+Postgres/Ollama). Models the architecture as a graph: `:Component` nodes
+(service/datastore/queue/external_system, matching Postgres
+`components.type`) and `:Owner` nodes, connected by `SENDS_DATA_TO`,
+`DEPENDS_ON`, and `OWNED_BY` relationships — this is what makes
+relationship questions answerable ("what's downstream of this component,
+three hops out") which are structurally graph traversals, not similarity
+search. Nodes/relationships are populated by a rule-based (regex)
+extractor over the existing sample documents (`app/graph/extraction.py`)
+— not an LLM extractor; see docs/DECISIONS.md ADR-007 for what this
+milestone does and deliberately doesn't cover (`TrustBoundary`,
+`ComplianceTag`, and general-purpose doc-to-graph extraction remain
+future work). Every node and relationship carries `pg_document_id`/
+`pg_chunk_id` (and components additionally `pg_component_id`) linking
+back to Postgres evidence, and graph query results are returned using
+the same `Citation` shape `/search` and `/answer` use
+(`app/graph/retrieval.py`) — the graph is an additional retrieval mode,
+not a parallel evidence model.
 
 ### Hybrid retrieval
 Combines vector similarity (pgvector) with lexical/keyword search
@@ -123,21 +130,35 @@ similarity at all. Built directly on the Postgres schema; no new
 infrastructure.
 
 ### GraphRAG
-Retrieval that traverses the Neo4j graph (not just vector/lexical search)
-to assemble context for relationship-aware questions, then feeds that
-subgraph to the reasoning layer alongside text chunks. Depends entirely on
-Neo4j existing and being trustworthy (§ above) — postponed with it.
+**First milestone implemented, Phase 5** — `app/graph/retrieval.py`
+(`find_paths`) traverses the Neo4j graph for bounded multi-hop
+dependency/data-flow questions ("what's downstream of X"), returning
+paths with full Postgres-backed citations per hop. Exposed via
+`POST /graph/query`. **Not yet done:** feeding graph results into the
+`/answer` generation prompt alongside text chunks — this milestone keeps
+graph retrieval and the existing hybrid-retrieval RAG pipeline separate
+(`app/generation/service.py` is unchanged), so graph facts are queryable
+and fully cited but not yet part of single-shot answer generation. That
+integration is a natural next milestone, not done here to keep this
+one's blast radius small and to avoid risking the already-working
+`/answer` pipeline and its passing tests.
 
 ### Multimodal retrieval
-Retrieval over non-text artifacts: architecture diagrams (images),
-diagram-as-PDF, scanned docs. Requires image embeddings and/or
-OCR/vision-model extraction feeding into the same chunk store. Valuable
-because architecture is often communicated primarily as diagrams, but it's
-a distinct extraction problem from text ingestion and shouldn't block a
-working text pipeline. **Recommendation: postpone to a phase after
-text-only retrieval is solid**; land it as an additional ingestion path
-into the *same* pgvector/Postgres schema (image chunks get their own
-embedding column/table, not a parallel system).
+**Implemented, Phase 6** (`app/multimodal/`). Diagrams (PNG/JPEG) and
+PDF pages are OCR'd (RapidOCR, ONNX runtime — local, free, always on)
+and optionally captioned by a local vision model (Ollama +
+`moondream`, off by default). Landed exactly as this section originally
+recommended: as an additional ingestion path into the *same*
+Postgres/pgvector `chunks` table, not a parallel system — OCR text and
+vision captions are embedded with the *same* text-embedding model used
+for prose, so they are retrieved by the existing hybrid/lexical/vector
+search and are eligible as `/answer` evidence with zero changes to
+retrieval or generation code. `chunks.modality` (`text`/`image_ocr`/
+`image_caption`) and `chunks.bbox` (pixel-region provenance) are the
+only schema additions — see docs/SCHEMA.md §2 and docs/DECISIONS.md
+ADR-008 for what this milestone found empirically (including the small
+vision model's real limits for structured relationship extraction, not
+glossed over).
 
 ### Reranking
 **Implemented, Phase 4** (`app/retrieval/rerank.py`). A local cross-encoder
@@ -154,15 +175,36 @@ Verified empirically (docs/DECISIONS.md ADR-006) to correct real
 misrankings on the synthetic dataset, not just in theory.
 
 ### Bounded agentic reasoning
-For questions that need multiple retrieval/tool steps (e.g. "trace every
-downstream consumer of this data store and check each against the
-retention policy"), a loop that plans a step, calls a retrieval/graph
-tool, observes, and decides whether to continue — capped by a hard max
-step count, wall-clock budget, and tool-call allowlist. No open-ended
-autonomy: on hitting the bound, it returns the best evidence gathered
-rather than continuing indefinitely or guessing. This is explicitly the
-*last* piece to build — single-shot retrieval + generation should handle
-most queries first; the agent loop is for the residual multi-hop cases.
+**Implemented, Phase 7** (`app/agent/`). For questions that need
+multiple retrieval/tool steps (e.g. "what does event-collector send
+data to downstream?"), `app/agent/controller.py::run_agent` always
+searches first, then — only if the question reads as a relationship/
+dependency question and names a known component — traverses the graph,
+capped by a hard max step count (`agent_max_steps`), a wall-clock budget
+(`agent_time_budget_seconds`), and a fixed tool allowlist
+(`app/agent/tools.py::TOOL_REGISTRY`, exactly two read-only tools). No
+open-ended autonomy: on hitting either bound, it returns the evidence
+gathered so far rather than continuing or guessing. The control flow
+itself is deterministic (rules, not an LLM plan) — see
+docs/DECISIONS.md ADR-009 for why.
+
+### Architecture Review / Policy Engine
+**Implemented, Phase 7** (`app/policy/`, `POST /review`). Runs the
+bounded agent to gather text, graph, and multimodal evidence (all three
+land in the same `chunks` table or the same graph, so one retrieval call
+already spans all of them), then evaluates a PASS/FAIL/UNKNOWN/CONFLICT
+verdict by scanning that evidence for negation vs. affirmation phrasing
+(`app/policy/markers.py`) — rule-based, not LLM-judged, for the same
+reason the agent's control flow is (ADR-009). Scanning is sentence/
+bullet-granular, not chunk-granular (ADR-010) — an unrelated bullet in
+the same retrieved chunk can no longer contaminate a verdict. CONFLICT is a first-class
+outcome (both a negation and an affirmation found in relevant evidence
+— contradiction detection) and UNKNOWN is a genuine abstention (no
+evidence, or no evidence relevant enough to judge) rather than a forced
+guess. Every verdict is persisted as a `Finding` with full
+`FindingEvidence` citations, exactly like `/answer`'s findings, and
+`POST /review` is a separate endpoint from `/answer` — the existing
+single-shot RAG pipeline is unmodified by this phase.
 
 ### Evidence / provenance
 Not a component but a requirement threaded through every other one: every
@@ -185,13 +227,20 @@ Threaded throughout, not a bolt-on module:
 - Audit log of who queried what and which findings were shown to whom.
 
 ### Evaluation
-A golden set of (query, expected evidence, expected finding) triples used
-to measure retrieval recall/precision and answer groundedness (does the
-generated finding actually follow from the cited evidence — checkable
-mechanically, not just by eye) before and after any retrieval/prompt
-change. Needed early enough to catch regressions, but the *set itself*
-can start small and grow with real usage rather than being built
-exhaustively up front.
+**Compact version implemented, Phase 7/8** (`app/evaluation/`,
+`tests/test_evaluation.py`). A golden set of (query, expected document)
+and (question, expected verdict) pairs — every expected value verified
+empirically before being written down (ADR-011) — spanning both the
+synthetic dataset and a small real public corpus
+(`data/samples/public/`: Kubernetes, NIST, OWASP excerpts, each with
+recorded URL/license). Measures Recall@5/10, MRR, nDCG@5 (`app/evaluation/metrics.py`,
+generic binary-relevance IR metrics), finding correctness/completeness,
+citation accuracy against real Postgres rows, groundedness, and
+abstention/false-confidence rate on genuinely unanswerable questions —
+plus a baseline-RAG-vs-ArchLens comparison
+(`app/evaluation/baseline.py`: lexical-only retrieval vs. the real
+hybrid+rerank production path). Grows with real usage rather than being
+built exhaustively up front.
 
 ### Observability
 Structured tracing of the retrieval → rerank → (graph) → reasoning
@@ -213,7 +262,10 @@ Postgres (system of record), Phase 1 tables:
 - `chunks` — retrieval-unit text slices with embeddings (pgvector) and
   content hashes
 - `components` — structured architecture facts (name, type, owner, tags),
-  with provenance links back to the document/chunk they came from
+  with provenance links back to the document/chunk they came from. As of
+  Phase 5, actually populated — by the rule-based graph extractor
+  (`extraction_method = 'rule_based'`); Phase 1 shipped the columns with
+  nothing writing to them yet.
 - `compliance_controls` — the control set findings are checked against
   (a small custom set initially, per current decision)
 - `findings` — risk/compliance claims, linked to their evidence via a
@@ -224,11 +276,18 @@ No `tenant_id` column exists yet (single-tenant MVP, per current
 decision) — see docs/SCHEMA.md §0 for how the schema stays extensible to
 multi-tenancy without adding unused columns now.
 
-Neo4j (once justified, §7):
-- Nodes: `Component`, `DataStore`, `DataFlow`, `TrustBoundary`, `Owner`,
-  `ComplianceTag`
-- Edges: `SENDS_DATA_TO`, `DEPENDS_ON`, `OWNED_BY`, `TAGGED_WITH`,
-  `CROSSES_BOUNDARY`
+Neo4j — **first milestone implemented, Phase 5** (`app/graph/`), via
+Docker (Community Edition). What this originally-sketched schema became
+in practice, and why, is recorded in docs/DECISIONS.md ADR-007:
+- Nodes: `Component` (single label, `type` property — not separate
+  `Component`/`DataStore` labels), `Owner`
+- Edges: `SENDS_DATA_TO`, `DEPENDS_ON`, `OWNED_BY`
+- Reserved, not yet populated: `TrustBoundary`, `ComplianceTag`,
+  `TAGGED_WITH`, `CROSSES_BOUNDARY` — the sample data doesn't state
+  either concept explicitly, and extraction only ever encodes facts
+  actually present in source text (CLAUDE.md rule 3).
+- Every node/relationship carries `pg_document_id`/`pg_chunk_id`
+  (components also `pg_component_id`) linking back to Postgres.
 
 ## 6. Security model (summary)
 
@@ -256,13 +315,34 @@ Neo4j (once justified, §7):
   Phase 4**
 - Basic evidence/provenance model end to end
 - Single-shot RAG (retrieve → answer with citations), no agent loop yet
-- Minimal eval set + structured logging
+- GraphRAG (Neo4j, rule-based extraction, bounded multi-hop traversal) —
+  **first milestone implemented, Phase 5**
+- Multimodal retrieval (OCR always on; vision captioning optional/local)
+  — **implemented, Phase 6**
+- Bounded agentic reasoning + Architecture Review / Policy Engine
+  (PASS/FAIL/UNKNOWN/CONFLICT, severity, confidence, citations,
+  recommendations) — **implemented, Phase 7**
+- Minimal eval set + structured logging — **compact version implemented,
+  Phase 7** (`tests/test_evaluation.py`: retrieval, groundedness,
+  citation accuracy, completeness, abstention, latency)
 
 **Postponed until justified by real usage:**
-- **Neo4j + GraphRAG** — needs a working, trustworthy extraction step from
-  docs to graph facts first; adds a second store to keep consistent.
-  Build structured SQL retrieval first and see what relationship
-  questions it genuinely can't answer.
+- **Feeding graph results into `/answer` generation specifically** —
+  `/answer` (Phase 3) remains single-shot RAG without graph evidence;
+  `/review` (Phase 7) is the endpoint that combines text + graph +
+  multimodal evidence. Merging that capability into `/answer` itself,
+  rather than keeping it a separate endpoint, is deferred (ADR-009).
+- **General-purpose (LLM-based) graph extraction** — Phase 5's extractor
+  is rule-based, tuned to the existing sample documents' structure, not
+  a general architecture-doc-to-graph extraction step. Revisit once
+  real, structurally-varied documents need extraction.
+- **Reliable vision-based relationship extraction** — Phase 6's small
+  local vision model (`moondream`) produces coherent captions but rarely
+  the strict parseable format relationship extraction needs; component
+  names (via OCR) are reliable, diagram relationships mostly aren't yet.
+  Revisit with a larger/better local vision model once one is practical
+  on typical hardware, or once relationship extraction is genuinely
+  needed rather than nice-to-have.
 - **Multimodal retrieval** — real need (diagrams matter) but a distinct
   extraction problem; land as an additional ingestion path once text
   retrieval is solid.

@@ -39,6 +39,9 @@ def citation_for(chunk: Chunk) -> Citation:
         chunk_content_hash=chunk.content_hash,
         start_offset=chunk.start_offset,
         end_offset=chunk.end_offset,
+        modality=chunk.modality,
+        page_number=chunk.page_number,
+        bbox=chunk.bbox,
     )
 
 

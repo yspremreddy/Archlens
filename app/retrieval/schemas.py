@@ -12,6 +12,10 @@ class SearchFiltersIn(BaseModel):
     filename_contains: str | None = None
     uploaded_after: datetime | None = None
     uploaded_before: datetime | None = None
+    # Phase 6: restrict to a single chunk modality — e.g. "image_ocr" or
+    # "image_caption" to search only diagram-derived text, or "text" to
+    # exclude it. None (default) searches every modality together.
+    modality: str | None = None
 
 
 class SearchRequest(BaseModel):
@@ -36,6 +40,11 @@ class Citation(BaseModel):
     chunk_content_hash: str
     start_offset: int | None
     end_offset: int | None
+    # Phase 6: present (non-None) for chunks derived from an image/PDF
+    # page — "text" modality chunks leave these None, same as before.
+    modality: str = "text"
+    page_number: int | None = None
+    bbox: dict | None = None
 
 
 class SearchResultItem(BaseModel):

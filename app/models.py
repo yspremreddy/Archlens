@@ -113,6 +113,15 @@ class Chunk(Base):
             postgresql_using="hnsw",
             postgresql_ops={"embedding": "vector_cosine_ops"},
         ),
+        # Phase 6: multimodal chunks share this same table (see module
+        # docstring update in docs/SCHEMA.md §2 and docs/DECISIONS.md
+        # ADR-008) — a text chunk from OCR or a vision-model caption is
+        # still just a Chunk, searchable by the exact same hybrid/vector/
+        # lexical retrieval with zero retrieval-layer changes.
+        CheckConstraint(
+            "modality IN ('text','image_ocr','image_caption')", name="ck_chunks_modality"
+        ),
+        Index("idx_chunks_modality", "modality"),
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -127,6 +136,8 @@ class Chunk(Base):
     token_count: Mapped[int | None] = mapped_column(Integer)
     content_hash: Mapped[str] = mapped_column(Text, nullable=False)
     embedding = mapped_column(Vector(_settings.embedding_dimension), nullable=True)
+    modality: Mapped[str] = mapped_column(Text, nullable=False, server_default="text")
+    bbox: Mapped[dict | None] = mapped_column(JSONB)
     created_at: Mapped[datetime] = _created_at_col()
 
     document: Mapped["Document"] = relationship(back_populates="chunks")
@@ -161,7 +172,7 @@ class Component(Base):
 
     __table_args__ = __table_args__ + (
         CheckConstraint(
-            "extraction_method IN ('manual','llm_extracted')",
+            "extraction_method IN ('manual','llm_extracted','rule_based','vision_extracted')",
             name="ck_components_extraction_method",
         ),
         Index("idx_components_type", "type"),
@@ -196,9 +207,22 @@ class Finding(Base):
             "confidence IS NULL OR (confidence >= 0 AND confidence <= 1)",
             name="ck_findings_confidence_range",
         ),
+        # Phase 7: policy-engine verdicts (app/policy/). Nullable — a
+        # Phase 3 /answer finding has no verdict/severity (it's a free-
+        # text answer, not a policy check), so existing rows and the
+        # existing /answer code path are unaffected.
+        CheckConstraint(
+            "verdict IS NULL OR verdict IN ('PASS','FAIL','UNKNOWN','CONFLICT')",
+            name="ck_findings_verdict",
+        ),
+        CheckConstraint(
+            "severity IS NULL OR severity IN ('low','medium','high','critical')",
+            name="ck_findings_severity",
+        ),
         Index("idx_findings_status", "status"),
         Index("idx_findings_control_id", "control_id"),
         Index("idx_findings_component_id", "component_id"),
+        Index("idx_findings_verdict", "verdict"),
     )
 
     id: Mapped[uuid.UUID] = _uuid_pk()
@@ -206,6 +230,8 @@ class Finding(Base):
     statement: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(Text, nullable=False, server_default="open")
     confidence: Mapped[float | None] = mapped_column(Numeric(3, 2))
+    verdict: Mapped[str | None] = mapped_column(Text)
+    severity: Mapped[str | None] = mapped_column(Text)
     control_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("compliance_controls.id", ondelete="RESTRICT")
     )

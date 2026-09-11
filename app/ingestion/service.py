@@ -25,7 +25,7 @@ def sha256_hex(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
-def _store_raw_bytes(content: bytes, content_hash: str) -> str:
+def store_raw_bytes(content: bytes, content_hash: str) -> str:
     settings = get_settings()
     storage_dir = Path(settings.storage_dir)
     storage_dir.mkdir(parents=True, exist_ok=True)
@@ -46,7 +46,7 @@ def ingest_document(
     mime_type: str | None,
 ) -> Document:
     content_hash = sha256_hex(content)
-    storage_path = _store_raw_bytes(content, content_hash)
+    storage_path = store_raw_bytes(content, content_hash)
 
     document = Document(
         source_type="upload",

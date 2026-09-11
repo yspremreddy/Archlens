@@ -87,10 +87,12 @@ A retrieval-unit slice of a document's text, with its embedding.
 | `text`          | text            | NOT NULL, CHECK (`length(text) > 0`)              | |
 | `start_offset`  | integer         | NULL                                               | Character offset into the source text, where derivable (plain text/markdown). Null for formats where an offset isn't meaningful (e.g. PDF page-based extraction). |
 | `end_offset`    | integer         | NULL                                               | |
-| `page_number`   | integer         | NULL                                               | For paginated sources (PDF). Null for plain text/markdown. |
+| `page_number`   | integer         | NULL                                               | For paginated sources. Null for plain text/markdown; `1` for a standalone image (Phase 6); the actual page index for a multi-page PDF (both text-PDF-as-prose and image/PDF-page ingestion — Phase 6 — populate this the same way). |
 | `token_count`   | integer         | NULL                                               | Populated by the chunker; informational, used for chunk-size tuning. |
 | `content_hash`  | text            | NOT NULL                                           | sha256 of `text`, exactly as stored. This is the field a `finding`'s evidence citation is ultimately checked against. |
 | `embedding`     | vector(384)     | NULL                                               | pgvector column. **Dimension 384 assumes a local, open-source sentence-embedding model (e.g. `all-MiniLM-L6-v2`-class) per CLAUDE.md rule 8 — this is a placeholder assumption, not a confirmed decision, and needs sign-off before the ingestion pipeline is built (tracked in TODO.md).** Nullable because a chunk can exist (from chunking) before embedding runs — ingestion is chunk-then-embed as two steps, not atomic. |
+| `modality`      | text            | NOT NULL, DEFAULT `'text'`, CHECK (`modality IN ('text','image_ocr','image_caption')`) | **Added Phase 6** (migration `cc8e51c1a598`). Distinguishes a plain text-document chunk from one derived from an uploaded image/PDF page — OCR'd text (`image_ocr`) or a vision-model caption (`image_caption`). All pre-Phase-6 rows default to `'text'` with no backfill needed. Deliberately a column on the *same* table, not a separate one — see docs/DECISIONS.md ADR-008: a chunk is a chunk regardless of modality, embedded and retrieved identically. |
+| `bbox`          | jsonb           | NULL                                               | **Added Phase 6.** Pixel-space bounding box (`{"x0","y0","x1","y1"}`) for an `image_ocr` chunk (the OCR engine's detected text region) or the whole-page box for an `image_caption` chunk. Null for `'text'` chunks, which use `start_offset`/`end_offset` instead — region provenance for images, character-offset provenance for prose, same idea applied to the two different source formats. |
 | `created_at`    | timestamptz     | NOT NULL, DEFAULT `now()`                          | |
 
 **Constraints:**
@@ -113,6 +115,9 @@ A retrieval-unit slice of a document's text, with its embedding.
   list-count/training step needed, and pgvector 0.8.x (bundled in the
   `pgvector/pgvector:pg16` image) supports it natively. This is the
   index Phase 1 explicitly deferred — see the note below, now resolved.
+- `idx_chunks_modality` — **added in Phase 6.** Backs the `modality`
+  structured filter (`app/retrieval/filters.py`) — "search only diagram
+  text" is a common enough query shape to index directly.
 
 ## 3. `components`
 
@@ -133,7 +138,7 @@ logic yet).
 | `tags`                | text[]  | NOT NULL, DEFAULT `'{}'`                          | Simple array is sufficient for Phase 1 filtering; not `jsonb`, since tags are just labels, not structured data. |
 | `source_document_id`  | uuid    | NULL, FK → `documents(id)` ON DELETE SET NULL      | Provenance: which document this was recorded/extracted from. Nullable because Phase 1 may include manually-entered components with no source document. `SET NULL` rather than `CASCADE`/`RESTRICT`: losing the source document shouldn't destroy or block deletion of a component that's since been corroborated elsewhere — but see the note below, this is worth confirming once extraction actually exists. |
 | `source_chunk_id`     | uuid    | NULL, FK → `chunks(id)` ON DELETE SET NULL         | Finer-grained provenance than the document alone, when known. |
-| `extraction_method`   | text    | NOT NULL, DEFAULT `'manual'`, CHECK (`extraction_method IN ('manual','llm_extracted')`) | Phase 1 ships with manual entry only; the `llm_extracted` value exists so the column doesn't need a migration when extraction is built, but nothing populates it yet. |
+| `extraction_method`   | text    | NOT NULL, DEFAULT `'manual'`, CHECK (`extraction_method IN ('manual','llm_extracted','rule_based','vision_extracted')`) | Phase 1 shipped manual entry only, with the column unpopulated. Phase 5 adds `'rule_based'` (migration `540fcff68f20`) — a regex extractor over prose (`app/graph/extraction.py`). Phase 6 adds `'vision_extracted'` (migration `cc8e51c1a598`) — components read from OCR'd diagram labels, relationships (when present) parsed from a vision-model caption (`app/multimodal/graph.py`); distinct from `'rule_based'` since the source is an image, not prose, even though component *names* come from OCR text recognition rather than "vision understanding" per se — see docs/DECISIONS.md ADR-008. |
 | `created_at`          | timestamptz | NOT NULL, DEFAULT `now()`                     | |
 | `updated_at`          | timestamptz | NOT NULL, DEFAULT `now()`                     | |
 
@@ -179,12 +184,15 @@ A risk/compliance claim the system has produced, with its evidence.
 | `control_id`     | uuid        | NULL, FK → `compliance_controls(id)` ON DELETE RESTRICT            | A finding tied to a control shouldn't be able to silently lose that link via an unrelated control deletion. |
 | `component_id`   | uuid        | NULL, FK → `components(id)` ON DELETE SET NULL                     | Which component the finding is about, when applicable. |
 | `created_by`     | text        | NULL                                                                 | Same stub convention as `documents.uploaded_by`. |
+| `verdict`        | text        | NULL, CHECK (`verdict IS NULL OR verdict IN ('PASS','FAIL','UNKNOWN','CONFLICT')`) | **Added Phase 7** (migration `9fbf4e4d16c0`). Set by the policy engine (`app/policy/`, `POST /review`); null for a Phase 3 `/answer` finding, which is a free-text answer, not a policy check. |
+| `severity`       | text        | NULL, CHECK (`severity IS NULL OR severity IN ('low','medium','high','critical')`) | **Added Phase 7.** Set alongside `verdict`; null otherwise. |
 | `created_at`     | timestamptz | NOT NULL, DEFAULT `now()`                                           | |
 | `updated_at`     | timestamptz | NOT NULL, DEFAULT `now()`                                           | |
 
 **Indexes:**
 - `idx_findings_status` on `(status)`.
 - `idx_findings_control_id` on `(control_id)`.
+- `idx_findings_verdict` on `(verdict)` — **added Phase 7.**
 - `idx_findings_component_id` on `(component_id)`.
 
 ### 5a. `finding_evidence` (join table — part of the findings design)

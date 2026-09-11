@@ -17,5 +17,26 @@ services:
       timeout: 5s
       retries: 10
 
+  neo4j:
+    image: neo4j:5-community
+    container_name: archlens-neo4j
+    restart: unless-stopped
+    environment:
+      # Community edition, no plugins/APOC — the graph queries this
+      # phase needs (fixed-length variable-hop traversals) are plain
+      # Cypher, no extension required. Free, local, no license needed.
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-archlens_dev_password}
+    ports:
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    volumes:
+      - archlens_neo4jdata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:7474 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
 volumes:
   archlens_pgdata:
+  archlens_neo4jdata:

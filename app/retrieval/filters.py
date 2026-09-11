@@ -6,6 +6,11 @@ yet — `components` and `compliance_controls` aren't populated by anything
 in Phase 1/2 (no extraction step exists), so a filter on them would have
 nothing to filter against. Extending `SearchFilters` when that data
 exists is additive, not a redesign.
+
+Phase 6 adds `modality`, following the same principle: multimodal chunks
+(app/multimodal/) live in the same `chunks` table with the same columns
+every other filter already operates on, so "only search diagram text" is
+one more predicate, not a parallel filtering system.
 """
 
 from dataclasses import dataclass
@@ -23,6 +28,7 @@ class SearchFilters:
     filename_contains: str | None = None
     uploaded_after: datetime | None = None
     uploaded_before: datetime | None = None
+    modality: str | None = None
 
 
 def filters_from_schema(filters_in) -> "SearchFilters | None":
@@ -38,6 +44,7 @@ def filters_from_schema(filters_in) -> "SearchFilters | None":
         filename_contains=filters_in.filename_contains,
         uploaded_after=filters_in.uploaded_after,
         uploaded_before=filters_in.uploaded_before,
+        modality=getattr(filters_in, "modality", None),
     )
 
 
@@ -58,4 +65,6 @@ def apply_filters(stmt: Select, filters: SearchFilters | None) -> Select:
         stmt = stmt.where(Document.uploaded_at >= filters.uploaded_after)
     if filters.uploaded_before is not None:
         stmt = stmt.where(Document.uploaded_at <= filters.uploaded_before)
+    if filters.modality is not None:
+        stmt = stmt.where(Chunk.modality == filters.modality)
     return stmt
