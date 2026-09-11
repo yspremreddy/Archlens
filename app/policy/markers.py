@@ -42,6 +42,17 @@ NEGATION_PATTERNS = [
     r"\bprohibited\b",
     r"\bnot allowed\b",
     r"\bdenied\b",
+    # Added after a real compliance-requirement sentence ("Production
+    # customer databases must not be publicly accessible.") was found to
+    # match neither this list nor AFFIRMATION_PATTERNS at all, producing
+    # UNKNOWN on a plainly negative (prohibitive) requirement instead of
+    # FAIL. "must not"/"shall not" are the same generic class of
+    # negation-of-obligation phrasing as "not allowed"/"forbidden" above
+    # — just the surface form requirement/policy documents commonly use
+    # ("X must not Y") rather than the "X is not allowed" form already
+    # covered.
+    r"\bmust not\b",
+    r"\bshall not\b",
 ]
 # Deliberately NOT included: "cannot" and "never" (removed after testing
 # against real data). Both are too context-dependent — "users cannot

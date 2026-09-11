@@ -99,6 +99,31 @@ def test_evaluate_unrelated_document_negation_does_not_contaminate_verdict():
     assert v.verdict == "PASS"
 
 
+def test_evaluate_requirement_stated_with_must_not_is_fail():
+    # Regression test: a compliance requirement phrased with "must not"
+    # ("Production customer databases must not be publicly accessible.")
+    # used to match neither NEGATION_PATTERNS nor AFFIRMATION_PATTERNS at
+    # all, so a relevant-but-markerless requirement sentence produced
+    # UNKNOWN ("does not explicitly confirm or deny") instead of FAIL,
+    # even though the requirement statement itself is negative
+    # (prohibitive) in plain English. "must not"/"shall not" are the same
+    # class of generic negation-of-obligation phrasing already covered by
+    # "not allowed"/"forbidden"/"prohibited"/"disallowed"/"denied" — see
+    # docs/DECISIONS.md ADR-011 — just a different, very common surface
+    # form real compliance/requirement documents use.
+    v = evaluate(
+        "does this architecture comply with the requirement that production "
+        "customer databases must not be publicly accessible?",
+        [
+            "PostgreSQL is deployed in a public subnet.",
+            "Production customer databases must not be publicly accessible.",
+        ],
+    )
+    assert v.verdict == "FAIL"
+    assert len(v.denying_texts) == 1
+    assert "must not be publicly accessible" in v.denying_texts[0]
+
+
 def test_evaluate_unrelated_bullet_in_same_chunk_does_not_contaminate_verdict():
     # Regression test for ADR-010: a single retrieved chunk containing
     # three unrelated bullets used to make the whole chunk's negations/
@@ -223,6 +248,42 @@ def test_review_structured_filter_restricts_evidence_to_one_document(
     body = resp.json()
     assert body["citations"]
     assert all(c["document_id"] == payment_id for c in body["citations"])
+
+
+def test_review_public_subnet_database_is_fail(client):
+    # End-to-end regression test for the same bug reproduced above at the
+    # unit level: ingest a real document stating a production database is
+    # deployed in a public subnet alongside the requirement that
+    # production customer databases must not be publicly accessible, and
+    # confirm /review now correctly reports FAIL (previously UNKNOWN).
+    from pathlib import Path
+
+    doc_path = (
+        Path(__file__).resolve().parents[1]
+        / "data"
+        / "samples"
+        / "payment-service-architecture.md"
+    )
+    upload = client.post(
+        "/documents",
+        files={"file": (doc_path.name, doc_path.read_bytes(), "text/markdown")},
+    )
+    assert upload.status_code == 200, upload.text
+    assert upload.json()["status"] == "ingested"
+
+    resp = client.post(
+        "/review",
+        json={
+            "question": (
+                "Does this architecture comply with the requirement that "
+                "production customer databases must not be publicly accessible?"
+            )
+        },
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["verdict"] == "FAIL"
+    assert len(body["citations"]) > 0
 
 
 def test_review_rejects_empty_question(client):
