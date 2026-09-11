@@ -1,0 +1,146 @@
+{
+  "generated_by": "ArchLens /review API (real, live pipeline run \u2014 no fabricated values)",
+  "input_document": {
+    "filename": "payment-service-architecture.md",
+    "document_id": "067130fd-e130-4955-9634-af69d1202396",
+    "content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+    "source_path": "assets/demo/payment-service-architecture.md"
+  },
+  "reviews": [
+    {
+      "id": "q1",
+      "label": "Public database accessibility",
+      "question": "Does this architecture comply with the requirement that production customer databases must not be publicly accessible?",
+      "verdict": "FAIL",
+      "severity": "medium",
+      "confidence": 0.65,
+      "recommendation": "A gap was found: Production customer databases must not be publicly accessible.. Assign an owner, remediate, and add verification.",
+      "agent_steps": 1,
+      "citations": [
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 1,
+          "chunk_content_hash": "sha256:ddc690a5181a4bfe79061882fb71afbe3aee912931bc9c38fa19f9e4469dffc5",
+          "text": "## Compliance Requirements\n\n1. Production customer databases must not be publicly accessible.\n2. Customer payment data must be encrypted at rest.\n3. Production systems must retain payment records for at least 7 years.\n4. External API traffic must use HTTPS.\n5. Sensitive production services should run inside private network boundaries.\n\n## Reliability\n\nThe Payment Service runs with two Kubernetes replicas.\n\nPostgreSQL currently has a single primary instance and no documented failover configuration.\n\n## Open Questions\n\n- Database backups are not documented.\n- Disaster recovery procedures are not documented.\n- Database ownership is not assigned to a specific engineering team."
+        },
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 0,
+          "chunk_content_hash": "sha256:4f0f69230be4dbf33c1adb60887b0e739ea862d63b92861132c4818dc1c9396f",
+          "text": "# Payment Service Architecture Review\n\n## System Overview\n\nPayment Service is a production web application used to process customer payments.\n\nThe architecture contains:\n\n- API Gateway\n- Payment Service running on Kubernetes\n- PostgreSQL database\n- Redis cache\n- Object storage for payment receipts\n\n## Network Architecture\n\nInternet traffic enters through the API Gateway.\n\nThe API Gateway routes requests to the Payment Service.\n\nThe Payment Service connects to PostgreSQL and Redis.\n\nPostgreSQL stores customer and payment information.\n\nThe PostgreSQL database is deployed in a public subnet to simplify operational access.\n\n## Security\n\nThe database is configured with:\n\n- publicly accessible network access\n- username/password authentication\n- TLS enabled for application-to-database connections\n\nCustomer payment data is encrypted at the application layer before being stored.\n\n## Data Retention\n\nPayment records are retained for 7 years.\n\nTemporary payment-processing data in Redis is retained for 24 hours."
+        }
+      ],
+      "finding_id": "f661d441-8a5e-460f-befb-71fe6c6da240"
+    },
+    {
+      "id": "q2",
+      "label": "Payment data encryption",
+      "question": "Is customer payment data encrypted?",
+      "verdict": "PASS",
+      "severity": "low",
+      "confidence": 0.65,
+      "recommendation": "No action needed; evidence confirms this control is addressed.",
+      "agent_steps": 1,
+      "citations": [
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 0,
+          "chunk_content_hash": "sha256:4f0f69230be4dbf33c1adb60887b0e739ea862d63b92861132c4818dc1c9396f",
+          "text": "# Payment Service Architecture Review\n\n## System Overview\n\nPayment Service is a production web application used to process customer payments.\n\nThe architecture contains:\n\n- API Gateway\n- Payment Service running on Kubernetes\n- PostgreSQL database\n- Redis cache\n- Object storage for payment receipts\n\n## Network Architecture\n\nInternet traffic enters through the API Gateway.\n\nThe API Gateway routes requests to the Payment Service.\n\nThe Payment Service connects to PostgreSQL and Redis.\n\nPostgreSQL stores customer and payment information.\n\nThe PostgreSQL database is deployed in a public subnet to simplify operational access.\n\n## Security\n\nThe database is configured with:\n\n- publicly accessible network access\n- username/password authentication\n- TLS enabled for application-to-database connections\n\nCustomer payment data is encrypted at the application layer before being stored.\n\n## Data Retention\n\nPayment records are retained for 7 years.\n\nTemporary payment-processing data in Redis is retained for 24 hours."
+        },
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 1,
+          "chunk_content_hash": "sha256:ddc690a5181a4bfe79061882fb71afbe3aee912931bc9c38fa19f9e4469dffc5",
+          "text": "## Compliance Requirements\n\n1. Production customer databases must not be publicly accessible.\n2. Customer payment data must be encrypted at rest.\n3. Production systems must retain payment records for at least 7 years.\n4. External API traffic must use HTTPS.\n5. Sensitive production services should run inside private network boundaries.\n\n## Reliability\n\nThe Payment Service runs with two Kubernetes replicas.\n\nPostgreSQL currently has a single primary instance and no documented failover configuration.\n\n## Open Questions\n\n- Database backups are not documented.\n- Disaster recovery procedures are not documented.\n- Database ownership is not assigned to a specific engineering team."
+        }
+      ],
+      "finding_id": "745ff7f0-4e6b-4758-b230-5f95bc4f4406"
+    },
+    {
+      "id": "q3",
+      "label": "Payment record retention",
+      "question": "Are payment records retained for at least 7 years?",
+      "verdict": "UNKNOWN",
+      "severity": "low",
+      "confidence": 0.67,
+      "recommendation": "Relevant evidence was found but it does not explicitly confirm or deny this control. Manual review recommended.",
+      "agent_steps": 1,
+      "citations": [
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 1,
+          "chunk_content_hash": "sha256:ddc690a5181a4bfe79061882fb71afbe3aee912931bc9c38fa19f9e4469dffc5",
+          "text": "## Compliance Requirements\n\n1. Production customer databases must not be publicly accessible.\n2. Customer payment data must be encrypted at rest.\n3. Production systems must retain payment records for at least 7 years.\n4. External API traffic must use HTTPS.\n5. Sensitive production services should run inside private network boundaries.\n\n## Reliability\n\nThe Payment Service runs with two Kubernetes replicas.\n\nPostgreSQL currently has a single primary instance and no documented failover configuration.\n\n## Open Questions\n\n- Database backups are not documented.\n- Disaster recovery procedures are not documented.\n- Database ownership is not assigned to a specific engineering team."
+        },
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 0,
+          "chunk_content_hash": "sha256:4f0f69230be4dbf33c1adb60887b0e739ea862d63b92861132c4818dc1c9396f",
+          "text": "# Payment Service Architecture Review\n\n## System Overview\n\nPayment Service is a production web application used to process customer payments.\n\nThe architecture contains:\n\n- API Gateway\n- Payment Service running on Kubernetes\n- PostgreSQL database\n- Redis cache\n- Object storage for payment receipts\n\n## Network Architecture\n\nInternet traffic enters through the API Gateway.\n\nThe API Gateway routes requests to the Payment Service.\n\nThe Payment Service connects to PostgreSQL and Redis.\n\nPostgreSQL stores customer and payment information.\n\nThe PostgreSQL database is deployed in a public subnet to simplify operational access.\n\n## Security\n\nThe database is configured with:\n\n- publicly accessible network access\n- username/password authentication\n- TLS enabled for application-to-database connections\n\nCustomer payment data is encrypted at the application layer before being stored.\n\n## Data Retention\n\nPayment records are retained for 7 years.\n\nTemporary payment-processing data in Redis is retained for 24 hours."
+        }
+      ],
+      "finding_id": "d3c6d120-3d64-4863-b5ce-7a5808a5bdd8"
+    },
+    {
+      "id": "q4",
+      "label": "PostgreSQL failover",
+      "question": "Does PostgreSQL have a documented failover configuration?",
+      "verdict": "CONFLICT",
+      "severity": "medium",
+      "confidence": 0.5,
+      "recommendation": "Evidence conflicts: some sources affirm this control is in place, others indicate it is not. Manually reconcile the sources listed in citations before relying on either claim.",
+      "agent_steps": 1,
+      "citations": [
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 1,
+          "chunk_content_hash": "sha256:ddc690a5181a4bfe79061882fb71afbe3aee912931bc9c38fa19f9e4469dffc5",
+          "text": "## Compliance Requirements\n\n1. Production customer databases must not be publicly accessible.\n2. Customer payment data must be encrypted at rest.\n3. Production systems must retain payment records for at least 7 years.\n4. External API traffic must use HTTPS.\n5. Sensitive production services should run inside private network boundaries.\n\n## Reliability\n\nThe Payment Service runs with two Kubernetes replicas.\n\nPostgreSQL currently has a single primary instance and no documented failover configuration.\n\n## Open Questions\n\n- Database backups are not documented.\n- Disaster recovery procedures are not documented.\n- Database ownership is not assigned to a specific engineering team."
+        },
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 0,
+          "chunk_content_hash": "sha256:4f0f69230be4dbf33c1adb60887b0e739ea862d63b92861132c4818dc1c9396f",
+          "text": "# Payment Service Architecture Review\n\n## System Overview\n\nPayment Service is a production web application used to process customer payments.\n\nThe architecture contains:\n\n- API Gateway\n- Payment Service running on Kubernetes\n- PostgreSQL database\n- Redis cache\n- Object storage for payment receipts\n\n## Network Architecture\n\nInternet traffic enters through the API Gateway.\n\nThe API Gateway routes requests to the Payment Service.\n\nThe Payment Service connects to PostgreSQL and Redis.\n\nPostgreSQL stores customer and payment information.\n\nThe PostgreSQL database is deployed in a public subnet to simplify operational access.\n\n## Security\n\nThe database is configured with:\n\n- publicly accessible network access\n- username/password authentication\n- TLS enabled for application-to-database connections\n\nCustomer payment data is encrypted at the application layer before being stored.\n\n## Data Retention\n\nPayment records are retained for 7 years.\n\nTemporary payment-processing data in Redis is retained for 24 hours."
+        }
+      ],
+      "finding_id": "b406e7c7-b3dc-4911-959d-90610012aeb5"
+    },
+    {
+      "id": "q5",
+      "label": "Backup / disaster recovery documentation",
+      "question": "Are database backups and disaster recovery procedures documented?",
+      "verdict": "UNKNOWN",
+      "severity": "low",
+      "confidence": 0.58,
+      "recommendation": "Relevant evidence was found but it does not explicitly confirm or deny this control. Manual review recommended.",
+      "agent_steps": 1,
+      "citations": [
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 1,
+          "chunk_content_hash": "sha256:ddc690a5181a4bfe79061882fb71afbe3aee912931bc9c38fa19f9e4469dffc5",
+          "text": "## Compliance Requirements\n\n1. Production customer databases must not be publicly accessible.\n2. Customer payment data must be encrypted at rest.\n3. Production systems must retain payment records for at least 7 years.\n4. External API traffic must use HTTPS.\n5. Sensitive production services should run inside private network boundaries.\n\n## Reliability\n\nThe Payment Service runs with two Kubernetes replicas.\n\nPostgreSQL currently has a single primary instance and no documented failover configuration.\n\n## Open Questions\n\n- Database backups are not documented.\n- Disaster recovery procedures are not documented.\n- Database ownership is not assigned to a specific engineering team."
+        },
+        {
+          "document_filename": "payment-service-architecture.md",
+          "document_content_hash": "sha256:902941c022ab6c6ccdae9eb6099328905907d9d723665587bc6077e2a48a491a",
+          "chunk_index": 0,
+          "chunk_content_hash": "sha256:4f0f69230be4dbf33c1adb60887b0e739ea862d63b92861132c4818dc1c9396f",
+          "text": "# Payment Service Architecture Review\n\n## System Overview\n\nPayment Service is a production web application used to process customer payments.\n\nThe architecture contains:\n\n- API Gateway\n- Payment Service running on Kubernetes\n- PostgreSQL database\n- Redis cache\n- Object storage for payment receipts\n\n## Network Architecture\n\nInternet traffic enters through the API Gateway.\n\nThe API Gateway routes requests to the Payment Service.\n\nThe Payment Service connects to PostgreSQL and Redis.\n\nPostgreSQL stores customer and payment information.\n\nThe PostgreSQL database is deployed in a public subnet to simplify operational access.\n\n## Security\n\nThe database is configured with:\n\n- publicly accessible network access\n- username/password authentication\n- TLS enabled for application-to-database connections\n\nCustomer payment data is encrypted at the application layer before being stored.\n\n## Data Retention\n\nPayment records are retained for 7 years.\n\nTemporary payment-processing data in Redis is retained for 24 hours."
+        }
+      ],
+      "finding_id": "8837b737-6172-4c61-824c-90c64608c78f"
+    }
+  ]
+}

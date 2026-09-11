@@ -2,6 +2,8 @@
 name = "archlens"
 version = "0.1.0"
 description = "ArchLens — AI Architecture Risk & Compliance Reviewer"
+readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",

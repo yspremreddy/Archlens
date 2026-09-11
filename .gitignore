@@ -7,3 +7,15 @@ data/storage/
 data/storage_test/
 *.egg-info/
 .ruff_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# scratch output from assets/demo/build_sample_output.py — real API
+# responses are copied to assets/demo/_raw/ transiently before being
+# assembled into the committed sample_output.json; not meant to be kept
+assets/demo/_raw/
